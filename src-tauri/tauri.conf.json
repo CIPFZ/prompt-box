@@ -1,40 +1,28 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "prompt-box",
-  "version": "0.1.0",
-  "identifier": "com.promptbox.desktop",
+  "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/HEAD/tauri.conf.json",
+  "productName": "PromptBox v2",
+  "version": "2.0.0",
+  "identifier": "com.promptbox.v2",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "windows": [
       {
-        "title": "prompt-box",
-        "width": 850,
-        "height": 800,
-        "minWidth": 850,
-        "minHeight": 800,
+        "title": "PromptBox v2",
+        "width": 1200,
+        "height": 900,
+        "minWidth": 800,
+        "minHeight": 600,
         "center": true,
-        "resizable": true,
-        "fullscreen": false
+        "resizable": true
       }
     ],
     "security": {
       "csp": null
     }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
   }
 }
