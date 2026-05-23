@@ -1,5 +1,5 @@
 use std::path::Path;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
 use crate::db;

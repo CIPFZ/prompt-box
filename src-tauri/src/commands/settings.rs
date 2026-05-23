@@ -1,7 +1,6 @@
 use rusqlite::{params, Connection};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
-use crate::db;
 use crate::models::*;
 
 fn settings_db(app: &AppHandle) -> Result<Connection, String> {
@@ -90,7 +89,7 @@ pub fn delete_api_config(app: AppHandle, id: i64) -> Result<(), String> {
 pub async fn test_api_connection(app: AppHandle, config_id: i64) -> Result<String, String> {
     let conn = settings_db(&app)?;
 
-    let (api_type, base_url, endpoint, api_key, extra_params): (String, String, String, Option<String>, String) = conn.query_row(
+    let (api_type, base_url, endpoint, api_key, _extra_params): (String, String, String, Option<String>, String) = conn.query_row(
         "SELECT api_type, base_url, endpoint, api_key, extra_params FROM api_configs WHERE id = ?1",
         params![config_id],
         |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get::<_, String>(4).unwrap_or_default())),
@@ -122,6 +121,7 @@ pub async fn test_api_connection(app: AppHandle, config_id: i64) -> Result<Strin
 
     let url = format!("{}{}", base_url.trim_end_matches('/'), endpoint);
 
+    let start = std::time::Instant::now();
     let result = match api_type.as_str() {
         "comfyui" => {
             client.get(&format!("{}/system_stats", base_url.trim_end_matches('/')))
@@ -139,11 +139,11 @@ pub async fn test_api_connection(app: AppHandle, config_id: i64) -> Result<Strin
                 .send().await
         }
     };
+    let elapsed = start.elapsed();
 
     match result {
         Ok(resp) => {
             let status = resp.status();
-            let elapsed = resp.elapsed();
             Ok(format!(
                 "连接成功! HTTP {} (延迟: {}ms)",
                 status.as_u16(),

@@ -129,7 +129,7 @@ pub fn create_prompt(
     image_filename: &str,
     thumbnail_filename: &str,
 ) -> Result<i64, String> {
-    let conn = Connection::open(db_path(app)?).map_err(|e| e.to_string())?;
+    let mut conn = Connection::open(db_path(app)?).map_err(|e| e.to_string())?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
 
     tx.execute(
@@ -332,7 +332,7 @@ pub fn update_prompt(
     negative: &str,
     tags_str: &str,
 ) -> Result<(), String> {
-    let conn = Connection::open(db_path(app)?).map_err(|e| e.to_string())?;
+    let mut conn = Connection::open(db_path(app)?).map_err(|e| e.to_string())?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
 
     tx.execute(
