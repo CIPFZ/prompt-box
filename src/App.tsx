@@ -8,22 +8,11 @@ import ToastContainer from "./components/ToastContainer";
 import { useSettingsStore } from "./stores/settingsStore";
 
 export default function App() {
-  const settings = useSettingsStore((s) => s.settings);
   const loadSettings = useSettingsStore((s) => s.load);
 
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
-
-  // Apply theme
-  useEffect(() => {
-    const root = document.documentElement;
-    if (settings?.theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [settings?.theme]);
 
   // Global keyboard shortcuts
   useEffect(() => {

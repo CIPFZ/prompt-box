@@ -34,12 +34,35 @@ export default function TopBar({
   const [searchOpen, setSearchOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dark = settings?.theme === "dark";
+  // Use both settings store + localStorage as fallback
+  const [dark, setDark] = useState(() => {
+    const saved = settings?.theme || localStorage.getItem("promptbox-theme") || "light";
+    return saved === "dark";
+  });
+
+  // Sync with settings store when loaded
+  useEffect(() => {
+    if (settings?.theme) {
+      const v = settings.theme === "dark";
+      setDark(v);
+      localStorage.setItem("promptbox-theme", settings.theme);
+      document.documentElement.classList.toggle("dark", v);
+    }
+  }, [settings?.theme]);
+
+  // Apply theme to DOM on toggle
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("promptbox-theme", dark ? "dark" : "light");
+  }, [dark]);
+
   const hasFilter = searchQuery || searchTags.length > 0;
 
   function toggleDark() {
+    const next = !dark;
+    setDark(next);
     if (settings) {
-      saveSettings({ ...settings, theme: dark ? "light" : "dark" });
+      saveSettings({ ...settings, theme: next ? "dark" : "light" });
     }
   }
 
