@@ -26,6 +26,7 @@ export default function TopBar({
 }: Props) {
   const location = useLocation();
   const isGallery = location.pathname === "/";
+  const isSettings = location.pathname === "/settings";
   const settings = useSettingsStore((s) => s.settings);
   const saveSettings = useSettingsStore((s) => s.saveSettings);
   const { lang, toggle: toggleLang, tt } = useI18nStore();
@@ -128,6 +129,7 @@ export default function TopBar({
             )}
           </button>
 
+          {!isSettings && (
           <Link
             to="/settings"
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -138,6 +140,7 @@ export default function TopBar({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </Link>
+          )}
 
           <Link
             to={isGallery ? "/create" : "/"}
