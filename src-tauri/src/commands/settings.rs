@@ -15,7 +15,7 @@ fn settings_db(app: &AppHandle) -> Result<Connection, String> {
 pub fn get_api_configs(app: AppHandle) -> Result<Vec<ApiConfig>, String> {
     let conn = settings_db(&app)?;
     let mut stmt = conn.prepare(
-        "SELECT id, name, api_type, base_url, endpoint, api_key, extra_params, is_active, created_at
+        "SELECT id, name, api_type, base_url, endpoint, api_key, extra_params, is_active, proxy_enabled, proxy_url, created_at
          FROM api_configs ORDER BY id ASC"
     ).map_err(|e| e.to_string())?;
 
@@ -29,7 +29,9 @@ pub fn get_api_configs(app: AppHandle) -> Result<Vec<ApiConfig>, String> {
             api_key: row.get(5)?,
             extra_params: row.get::<_, String>(6).unwrap_or_default(),
             is_active: row.get::<_, i32>(7).unwrap_or(0) != 0,
-            created_at: row.get(8)?,
+            proxy_enabled: row.get::<_, i32>(8).unwrap_or(0) != 0,
+            proxy_url: row.get::<_, String>(9).unwrap_or_default(),
+            created_at: row.get(10)?,
         })
     }).map_err(|e| e.to_string())?;
 
@@ -51,6 +53,8 @@ pub fn save_api_config(
     api_key: Option<String>,
     extra_params: Option<String>,
     is_active: bool,
+    proxy_enabled: bool,
+    proxy_url: Option<String>,
 ) -> Result<String, String> {
     let conn = settings_db(&app)?;
 
@@ -62,14 +66,14 @@ pub fn save_api_config(
 
     if let Some(config_id) = id {
         conn.execute(
-            "UPDATE api_configs SET name=?1, api_type=?2, base_url=?3, endpoint=?4, api_key=?5, extra_params=?6, is_active=?7 WHERE id=?8",
-            params![name, api_type, base_url, endpoint, api_key.unwrap_or_default(), extra_params.unwrap_or_default(), is_active as i32, config_id],
+            "UPDATE api_configs SET name=?1, api_type=?2, base_url=?3, endpoint=?4, api_key=?5, extra_params=?6, is_active=?7, proxy_enabled=?8, proxy_url=?9 WHERE id=?10",
+            params![name, api_type, base_url, endpoint, api_key.unwrap_or_default(), extra_params.unwrap_or_default(), is_active as i32, proxy_enabled as i32, proxy_url.unwrap_or_default(), config_id],
         ).map_err(|e| e.to_string())?;
         Ok("更新成功".to_string())
     } else {
         conn.execute(
-            "INSERT INTO api_configs (name, api_type, base_url, endpoint, api_key, extra_params, is_active) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-            params![name, api_type, base_url, endpoint, api_key.unwrap_or_default(), extra_params.unwrap_or_default(), is_active as i32],
+            "INSERT INTO api_configs (name, api_type, base_url, endpoint, api_key, extra_params, is_active, proxy_enabled, proxy_url) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+            params![name, api_type, base_url, endpoint, api_key.unwrap_or_default(), extra_params.unwrap_or_default(), is_active as i32, proxy_enabled as i32, proxy_url.unwrap_or_default()],
         ).map_err(|e| e.to_string())?;
         Ok("创建成功".to_string())
     }
@@ -89,29 +93,16 @@ pub fn delete_api_config(app: AppHandle, id: i64) -> Result<(), String> {
 pub async fn test_api_connection(app: AppHandle, config_id: i64) -> Result<String, String> {
     let conn = settings_db(&app)?;
 
-    let (api_type, base_url, endpoint, api_key, _extra_params): (String, String, String, Option<String>, String) = conn.query_row(
-        "SELECT api_type, base_url, endpoint, api_key, extra_params FROM api_configs WHERE id = ?1",
+    let (api_type, base_url, endpoint, api_key, _extra_params, proxy_enabled, proxy_url): (String, String, String, Option<String>, String, bool, String) = conn.query_row(
+        "SELECT api_type, base_url, endpoint, api_key, extra_params, proxy_enabled, proxy_url FROM api_configs WHERE id = ?1",
         params![config_id],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get::<_, String>(4).unwrap_or_default())),
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get::<_, String>(4).unwrap_or_default(), row.get::<_, i32>(5).unwrap_or(0) != 0, row.get::<_, String>(6).unwrap_or_default())),
     ).map_err(|e| e.to_string())?;
-
-    // Read proxy settings
-    let proxy_enabled: String = conn.query_row(
-        "SELECT value FROM app_settings WHERE key = 'proxy_enabled'",
-        [],
-        |row| row.get(0),
-    ).unwrap_or_default();
-
-    let proxy_url: String = conn.query_row(
-        "SELECT value FROM app_settings WHERE key = 'proxy_url'",
-        [],
-        |row| row.get(0),
-    ).unwrap_or_default();
 
     let mut client_builder = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10));
 
-    if proxy_enabled == "true" && !proxy_url.is_empty() {
+    if proxy_enabled && !proxy_url.is_empty() {
         let proxy = reqwest::Proxy::all(&proxy_url)
             .map_err(|e| format!("代理配置错误: {}", e))?;
         client_builder = client_builder.proxy(proxy);

@@ -24,6 +24,8 @@ export interface ApiConfig {
   api_key: string | null;
   extra_params: string;
   is_active: boolean;
+  proxy_enabled: boolean;
+  proxy_url: string;
   created_at: string;
 }
 

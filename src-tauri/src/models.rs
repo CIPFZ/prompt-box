@@ -29,6 +29,8 @@ pub struct ApiConfig {
     pub api_key: Option<String>,
     pub extra_params: String,
     pub is_active: bool,
+    pub proxy_enabled: bool,
+    pub proxy_url: String,
     pub created_at: String,
 }
 

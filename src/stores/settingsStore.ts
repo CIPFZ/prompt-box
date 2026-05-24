@@ -21,6 +21,8 @@ interface SettingsState {
     api_key?: string | null;
     extra_params?: string | null;
     is_active: boolean;
+    proxy_enabled: boolean;
+    proxy_url?: string | null;
   }) => Promise<void>;
   deleteApiConfig: (id: number) => Promise<void>;
   testConnection: (configId: number) => Promise<void>;

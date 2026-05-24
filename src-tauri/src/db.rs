@@ -74,6 +74,8 @@ pub fn init_db(app: &AppHandle) -> Result<(), String> {
             api_key TEXT DEFAULT '',
             extra_params TEXT DEFAULT '{}',
             is_active INTEGER DEFAULT 0,
+            proxy_enabled INTEGER DEFAULT 0,
+            proxy_url TEXT DEFAULT '',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )",
         [],

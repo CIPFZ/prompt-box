@@ -61,6 +61,8 @@ export const saveApiConfig = (config: {
   api_key?: string | null;
   extra_params?: string | null;
   is_active: boolean;
+  proxy_enabled: boolean;
+  proxy_url?: string | null;
 }) => invoke<string>("save_api_config", config);
 
 export const deleteApiConfig = (id: number) =>
