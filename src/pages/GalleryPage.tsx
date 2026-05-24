@@ -78,6 +78,7 @@ export default function GalleryPage() {
         onSearchChange={(q) => setSearch(q, searchTags)}
         searchTags={searchTags}
         onSearchTagsChange={(tags) => setSearch(searchQuery, tags)}
+        onClearFilter={() => setSearch("", [])}
         allTags={tagStore.allTags}
         showSearch
         totalCount={total}

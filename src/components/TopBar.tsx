@@ -7,6 +7,7 @@ interface Props {
   onSearchChange?: (query: string) => void;
   searchTags?: string[];
   onSearchTagsChange?: (tags: string[]) => void;
+  onClearFilter?: () => void;
   allTags?: string[];
   showSearch?: boolean;
   totalCount?: number;
@@ -17,6 +18,7 @@ export default function TopBar({
   onSearchChange,
   searchTags = [],
   onSearchTagsChange,
+  onClearFilter,
   allTags = [],
   showSearch = false,
   totalCount = 0,
@@ -47,8 +49,7 @@ export default function TopBar({
   }
 
   function clearAll() {
-    onSearchChange?.("");
-    onSearchTagsChange?.([]);
+    onClearFilter?.();
     setSearchOpen(false);
   }
 
@@ -87,17 +88,17 @@ export default function TopBar({
           {isGallery && showSearch && (
             <button
               onClick={() => setSearchOpen(true)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
+              className={`relative p-2 rounded-lg transition-colors ${
                 hasFilter
                   ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                   : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               {hasFilter && searchTags.length > 0 && (
-                <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[9px] px-1 py-0.5 rounded-full min-w-[16px] text-center leading-none">
                   {searchTags.length}
                 </span>
               )}
