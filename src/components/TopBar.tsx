@@ -89,7 +89,7 @@ export default function TopBar({
             <button
               onClick={() => setSearchOpen(true)}
               className={`relative p-2 rounded-lg transition-colors ${
-                hasFilter
+                searchOpen || hasFilter
                   ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                   : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}
