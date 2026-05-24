@@ -3,7 +3,6 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { usePromptStore } from "../stores/promptStore";
 import { useTagStore } from "../stores/tagStore";
 import TopBar from "../components/TopBar";
-import TagInput from "../components/TagInput";
 import GalleryCard from "../components/GalleryCard";
 
 const COLUMNS = { xl: 4, lg: 3, md: 2, sm: 1 };
@@ -26,7 +25,6 @@ export default function GalleryPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const loadedPages = useRef(new Set<number>());
 
-  // Determine column count based on container width
   const rawWidth = typeof window !== "undefined" ? window.innerWidth : 1280;
   const cols: number = useMemo(() => {
     if (rawWidth >= 1280) return COLUMNS.xl;
@@ -44,14 +42,12 @@ export default function GalleryPage() {
     overscan: 2,
   });
 
-  // Initial load
   useEffect(() => {
     refresh();
     loadTags();
     tagStore.load();
   }, []);
 
-  // Handle bottom reached for next page
   const handleScroll = useCallback(() => {
     const hasMore = items.length < total;
     const nextPage = page + 1;
@@ -67,7 +63,6 @@ export default function GalleryPage() {
     }
   }, [items.length, total, page, loading, fetchPage]);
 
-  // Helper: render a card by index
   const getItem = useCallback(
     (rowIdx: number, colIdx: number) => {
       const idx = rowIdx * cols + colIdx;
@@ -81,41 +76,22 @@ export default function GalleryPage() {
       <TopBar
         searchQuery={searchQuery}
         onSearchChange={(q) => setSearch(q, searchTags)}
+        searchTags={searchTags}
+        onSearchTagsChange={(tags) => setSearch(searchQuery, tags)}
+        allTags={tagStore.allTags}
         showSearch
+        totalCount={total}
       />
 
-      {/* Tag filter bar */}
-      <div className="px-6 py-3 bg-white border-b border-gray-100 flex items-center gap-3">
-        <TagInput
-          value={searchTags}
-          onChange={(tags) => setSearch(searchQuery, tags)}
-          allTags={tagStore.allTags}
-          allowCreate={false}
-          placeholder="筛选标签..."
-        />
-        {(searchQuery || searchTags.length > 0) && (
-          <button
-            onClick={() => setSearch("", [])}
-            className="text-xs text-blue-600 hover:text-blue-800 whitespace-nowrap flex-shrink-0"
-          >
-            清除筛选
-          </button>
-        )}
-        <span className="text-xs text-gray-400 flex-shrink-0 ml-auto">
-          {total} 条记录
-        </span>
-      </div>
-
-      {/* Gallery grid */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
         className="flex-1 overflow-auto p-6"
       >
         {loading && items.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">加载中...</div>
+          <div className="text-center py-20 text-gray-400 dark:text-gray-500">加载中...</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
+          <div className="text-center py-20 text-gray-400 dark:text-gray-500">
             <p>暂无记录</p>
             {(searchQuery || searchTags.length > 0) && (
               <button
@@ -167,7 +143,7 @@ export default function GalleryPage() {
         )}
 
         {loading && items.length > 0 && (
-          <div className="text-center py-4 text-gray-400 text-sm">加载更多...</div>
+          <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm">加载更多...</div>
         )}
       </div>
     </div>
